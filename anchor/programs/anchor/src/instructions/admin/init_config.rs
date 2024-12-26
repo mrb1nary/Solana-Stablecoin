@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     GlobalConfig, LIQUIDATION_BONUS, LIQUIDATION_THRESHOLD, MINT_DECIMALS, MIN_HEALTH_FACTOR,
     SEED_CONFIG, SEED_MINT_ACC,
@@ -35,9 +37,12 @@ pub struct InitializeConfig<'info> {
 }
 
 pub fn initialize_config_handler(ctx: Context<InitializeConfig>) -> Result<()> {
+
+    
     let config_account = &mut ctx.accounts.config_acc;
 
-    config_account.authority = ctx.accounts.authority.key();
+    config_account.authority =
+        Pubkey::from_str("CR5YeUUUHSFsZfGqforagDeSxamyjrXYy5wXGsTLDQPb").unwrap();
     config_account.mint_account = ctx.accounts.mint_acc.key();
     config_account.liquidation_threshold = LIQUIDATION_THRESHOLD;
     config_account.liquidation_bonus = LIQUIDATION_BONUS;
