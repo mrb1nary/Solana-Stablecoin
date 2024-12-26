@@ -15,7 +15,7 @@ declare_id!("5o3NtP3cm4YbGw6oFXg7fZK2TiZqHnuDGfVxdZrv4CwB");
 pub mod anchor {
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
+    pub fn initialize_config(ctx: Context<InitializeConfig>) -> Result<()> {
+        initialize_config_handler(ctx)
     }
 }
