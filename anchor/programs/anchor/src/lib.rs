@@ -18,4 +18,14 @@ pub mod anchor {
     pub fn initialize_config(ctx: Context<InitializeConfig>) -> Result<()> {
         initialize_config_handler(ctx)
     }
+
+    pub fn update_config(
+        ctx: Context<UpdateConfig>,
+        invoker: Pubkey,
+        min_health_factor: u8,
+    ) -> Result<()> {
+        update_config_handler(ctx, invoker, min_health_factor)
+    }
+
+    
 }
