@@ -17,7 +17,7 @@ pub fn check_health_factor_internal_function(
     let health_factor = calculate_health_factor(collateralAcc, configAcc, price_oracle)?;
 
     require!(
-        health_factor >= configAcc.minimum_health_factor,
+        health_factor >= configAcc.minimum_health_factor.into(),
         CustomError::BelowMinimumHealthFactor
     );
 

@@ -18,9 +18,9 @@ pub struct Collateral {
 pub struct GlobalConfig {
     pub authority: Pubkey,
     pub mint_account: Pubkey,
-    pub liquidation_threshold: u8,
-    pub liquidation_bonus: u8,
-    pub minimum_health_factor: u8,
+    pub liquidation_threshold: u64,
+    pub liquidation_bonus: u64,
+    pub minimum_health_factor: u64,
     pub bump: u8,
     pub bump_mint: u8,
 }

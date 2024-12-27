@@ -22,10 +22,8 @@ pub mod anchor {
     pub fn update_config(
         ctx: Context<UpdateConfig>,
         invoker: Pubkey,
-        min_health_factor: u8,
+        min_health_factor: u64,
     ) -> Result<()> {
         update_config_handler(ctx, invoker, min_health_factor)
     }
-
-    
 }

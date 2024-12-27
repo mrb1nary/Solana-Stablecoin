@@ -13,7 +13,7 @@ pub struct UpdateConfig<'info>{
     pub config_acc: Account<'info, GlobalConfig>
 }
 
-pub fn update_config_handler(ctx: Context<UpdateConfig>, invoker: Pubkey, min_health_factor: u8 )->Result<()>{
+pub fn update_config_handler(ctx: Context<UpdateConfig>, invoker: Pubkey, min_health_factor: u64 )->Result<()>{
     
     let config_account = &mut ctx.accounts.config_acc;
 

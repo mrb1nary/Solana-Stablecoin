@@ -1,12 +1,16 @@
-use crate::{Collateral, GlobalConfig, SEED_COLLATERAL_ACC, SEED_SOL_ACC};
+use crate::{
+    check_health_factor_internal_function, Collateral, GlobalConfig, SEED_COLLATERAL_ACC,
+    SEED_CONFIG, SEED_SOL_ACC,
+};
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token,
     token_interface::{Mint, Token2022, TokenAccount},
 };
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
+
+use super::{deposit_sol_internal_function, mint_token_internal_function};
 
 #[derive(Accounts)]
 pub struct DepositSolAndMintCollateral<'info> {
@@ -16,9 +20,9 @@ pub struct DepositSolAndMintCollateral<'info> {
     #[account(
         seeds = [SEED_CONFIG],
         bump= config_acc.bump,
-        has_one = mint_acc,
+        has_one = mint_account,
     )]
-    pub config_acc: Account<'info, GlobalConfig>,
+    pub config_acc: Box<Account<'info, GlobalConfig>>,
 
     #[account(
         init_if_needed,
@@ -37,12 +41,12 @@ pub struct DepositSolAndMintCollateral<'info> {
     pub sol_acc: SystemAccount<'info>,
 
     #[account(mut)]
-    pub mint_acc: Account<'info, Mint>,
+    pub mint_account: InterfaceAccount<'info, Mint>,
 
     #[account(
         init_if_needed,
         payer = depositor,
-        associated_token::mint = mint_acc,
+        associated_token::mint = mint_account,
         associated_token::authority = depositor,
         associated_token::token_program = token_program,
     )]
@@ -73,11 +77,26 @@ pub fn deposit_sol_and_mint_collateral_handler(
         collateral_account.bump_sol_account = ctx.bumps.sol_acc;
     }
 
+    check_health_factor_internal_function(
+        &ctx.accounts.collateral_acc,
+        &ctx.accounts.config_acc,
+        &ctx.accounts.price_oracle,
+    )?;
 
-    // check health factor function
-    // deposit sol from user wallet to program account function
-    // mint token function
+    deposit_sol_internal_function(
+        &ctx.accounts.depositor,
+        &ctx.accounts.sol_acc,
+        &ctx.accounts.system_program,
+        amount_collateral,
+    )?;
 
+    mint_token_internal_function(
+        &ctx.accounts.mint_account,
+        &ctx.accounts.associated_token_acc,
+        &ctx.accounts.token_program,
+        ctx.accounts.config_acc.bump_mint,
+        amount_to_mint,
+    )?;
 
     Ok(())
 }
