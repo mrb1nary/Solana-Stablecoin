@@ -1,8 +1,6 @@
-use std::u64::MAX;
-
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::native_token::LAMPORTS_PER_SOL;
-use pyth_solana_receiver_sdk::price_update::{self, get_feed_id_from_hex, Price, PriceUpdateV2};
+use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, Price, PriceUpdateV2};
 
 use crate::error::CustomError;
 use crate::{
@@ -10,14 +8,14 @@ use crate::{
 };
 
 pub fn check_health_factor_internal_function(
-    collateralAcc: &Account<Collateral>,
-    configAcc: &Account<GlobalConfig>,
+    collateral_acc: &Account<Collateral>,
+    config_acc: &Account<GlobalConfig>,
     price_oracle: &Account<PriceUpdateV2>,
 ) -> Result<()> {
-    let health_factor = calculate_health_factor(collateralAcc, configAcc, price_oracle)?;
+    let health_factor = calculate_health_factor(collateral_acc, config_acc, price_oracle)?;
 
     require!(
-        health_factor >= configAcc.minimum_health_factor.into(),
+        health_factor >= config_acc.minimum_health_factor.into(),
         CustomError::BelowMinimumHealthFactor
     );
 
@@ -25,27 +23,27 @@ pub fn check_health_factor_internal_function(
 }
 
 pub fn calculate_health_factor(
-    collateralAcc: &Account<Collateral>,
-    configAcc: &Account<GlobalConfig>,
+    collateral_acc: &Account<Collateral>,
+    config_acc: &Account<GlobalConfig>,
     price_oracle: &Account<PriceUpdateV2>,
 ) -> Result<u64> {
-    let collateral_value_in_usd = get_usd_value(&collateralAcc.lamport_balance, price_oracle)?;
+    let collateral_value_in_usd = get_usd_value(&collateral_acc.lamport_balance, price_oracle)?;
 
     let collateral_adjusted_after_liquidation_threshold =
-        (collateral_value_in_usd * configAcc.liquidation_threshold) / 100;
+        (collateral_value_in_usd * config_acc.liquidation_threshold) / 100;
 
     msg!(
         "Minted Amount : {:.9}",
-        collateralAcc.amount_minted as f64 / 1e9
+        collateral_acc.amount_minted as f64 / 1e9
     );
 
-    if collateralAcc.amount_minted == 0 {
+    if collateral_acc.amount_minted == 0 {
         msg!("Health factor MAX");
         return Ok(u64::MAX);
     }
 
     let health_factor =
-        (collateral_adjusted_after_liquidation_threshold) / collateralAcc.amount_minted;
+        (collateral_adjusted_after_liquidation_threshold) / collateral_acc.amount_minted;
     Ok(health_factor)
 }
 
