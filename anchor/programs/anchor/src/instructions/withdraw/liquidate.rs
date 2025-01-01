@@ -3,7 +3,7 @@ use anchor_spl::token_interface::{Mint, Token2022, TokenAccount};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 use crate::{
-    calculate_health_factor, error::CustomError, get_lamports_from_usd,
+    burn_tokens_internal, calculate_health_factor, error::CustomError, get_lamports_from_usd,
     withdraw_sol_internal_function, Collateral, GlobalConfig, SEED_CONFIG,
 };
 
@@ -73,6 +73,24 @@ pub fn process_liquidate(ctx: Context<Liquidate>, amount_to_burn: u64) -> Result
         &ctx.accounts.collateral_account.depositor,
         amount_to_liquidate,
         ctx.accounts.collateral_account.bump_sol_account,
+    )?;
+
+    burn_tokens_internal(
+        &ctx.accounts.mint_account,
+        &ctx.accounts.token_account,
+        &ctx.accounts.liquidator,
+        &ctx.accounts.token_program,
+        amount_to_burn,
+    )?;
+
+    let collateral_account = &mut ctx.accounts.collateral_account;
+    collateral_account.lamport_balance = ctx.accounts.sol_account.lamports();
+    collateral_account.amount_minted -= amount_to_burn;
+
+    calculate_health_factor(
+        &ctx.accounts.collateral_account,
+        &ctx.accounts.config_account,
+        &ctx.accounts.price_oracle,
     )?;
     Ok(())
 }
